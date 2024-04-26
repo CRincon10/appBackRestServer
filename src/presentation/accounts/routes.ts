@@ -15,9 +15,9 @@ export class AccountRoutes {
         const controller = new AccountsController(accountService);
         // Definir las rutas
         router.post('/', [AuthMiddleware.validateJWT], controller.createAccount);
-        router.post('/get-accounts',  controller.getAccounts);
+        router.get('/get-accounts/:userId?',  controller.getAccounts);
         router.put('/', controller.updateAccount);
-        router.delete('/', controller.deleteAccountById);
+        router.post('/disabled-account', [AuthMiddleware.validateJWT], controller.disabledAccount);
 
         return router;
     }

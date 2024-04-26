@@ -12,7 +12,7 @@ export class CategoryDto {
     ){}
 
     static create(object: {[key:string]:any} ): [string?, CategoryDto?]{
-        const {name, accountId, user,  } = object
+        const {name, accountId, user } = object
 
         if(!name) return ["name requerido", undefined];
         if(!accountId) return ["accountId requerido", undefined];

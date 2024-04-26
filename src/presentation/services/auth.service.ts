@@ -27,7 +27,7 @@ export class AuthService {
 
             const { password, ...userEntity } = UserEntity.createObjectUser(user);
 
-            const token = await JwtAdapter.generateToken({ id: user.id });
+            const token = await JwtAdapter.generateToken({ userId: user.id });
             if (!token) throw CustomError.internalServer("Error al intentar guardar JWT")
 
             //devuelve el objeto sin la contraseña

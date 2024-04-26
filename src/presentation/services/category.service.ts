@@ -1,17 +1,21 @@
 import { CategoryModel } from "../../data";
+import { AccountModel } from "../../data/mongo/models/account.model";
 import { CategoryDto, PaginationDto, UserEntity } from "../../domain";
 import { CategoryEntity } from '../../domain/entities/category.entity';
 import { CustomError } from "../../domain/errors/custom.error";
-
-
 
 export class CategoryService {
 
     constructor() { }
 
     public async createCategory(categoryDto: CategoryDto) {
-        const existCategory = await CategoryModel.findOne({ name: categoryDto.name, accountId: categoryDto.accountId });
-        if (existCategory) throw CustomError.badRequestResult("Ya existe una categoría con este nombre");
+        const [account, category ] = await Promise.all([
+            AccountModel.findById(categoryDto.accountId).catch(error => {throw CustomError.badRequestResult("No se encontró la cuenta")}),
+            CategoryModel.findOne({ name: categoryDto.name, accountId: categoryDto.accountId }),
+        ]);
+
+        if (category) throw CustomError.badRequestResult("Ya existe una categoría con este nombre");
+        if (!account) throw CustomError.badRequestResult("No se encontró la cuenta");
 
         try {
             const newCategory = new CategoryModel(categoryDto);

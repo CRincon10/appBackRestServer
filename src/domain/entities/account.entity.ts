@@ -10,10 +10,14 @@ export class AccountEntity {
         public documentType: boolean,
         public documentNumber: boolean,
         public userCreator?: UserSimpleResponse,
+        public users?: UserEntity[],
+        public permissions?: string[],
+        public organizations?: any,
+        public urlImage?: any,
     ){}
 
     static createAccountEntity(object: {[key: string]:any }){
-        const {name, documentType, documentNumber,  userCreator} = object;
+        const {name, documentType, documentNumber,  userCreator, users, permissions, organizations, urlImage } = object;
         let user = undefined;
 
         if(!name) throw CustomError.badRequestResult("Nombre de la cuenta requerido");
@@ -24,6 +28,13 @@ export class AccountEntity {
             user = UserEntity.createSimpleResponseUser(userCreator)
         };
 
-        return new AccountEntity(name, documentType, documentNumber, user);
+        if(users) users.map((x:any) => UserEntity.createObjectUser(x));
+
+        return new AccountEntity(name, documentType, documentNumber, user, users, permissions, organizations, urlImage);
+    }
+
+    static createSimpleResponseAccounts(object: {[key: string]:any }){
+        const {name, documentType, documentNumber, urlImage } = object;
+        return new AccountEntity(name, documentType, documentNumber, urlImage);
     }
 }

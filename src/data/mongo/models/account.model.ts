@@ -28,6 +28,12 @@ const accountSchema = new mongoose.Schema({
             ref: "User" 
         }
     ],
+    organizations: [
+        { 
+            type: Schema.Types.ObjectId, 
+            ref: "Organizations" 
+        }
+    ],
     dateCreated: {
         type: Date,
         required: true,
@@ -49,7 +55,6 @@ const accountSchema = new mongoose.Schema({
         type: String,
         default: "active",
         enum: ["active", "disabled", "paymentRequired"],
-        required: true
     },
     userCreator: {
         type: Schema.Types.ObjectId,

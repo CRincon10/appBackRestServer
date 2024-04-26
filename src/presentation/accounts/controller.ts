@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { CustomError } from "../../domain";
+import { CustomError, PaginationDto, UserEntity } from "../../domain";
 import { AccountService } from "../services/account.service";
 import { AccountDto } from "../../domain/dtos/accounts/account.dto";
+import { DisabledAccountDto } from "../../domain/dtos/shared/requests/account.request.dto";
 
 export class AccountsController {
 
@@ -22,16 +23,29 @@ export class AccountsController {
         if (error) return res.status(400).json(error)
 
 
-        this.accountService.createAccount(accountDto!).then((account) => res.json(account)).catch(error => this.handleError(error, res));
-    }
+        this.accountService.createAccount(accountDto!)
+            .then((account) => res.json({account}))
+            .catch(error => this.handleError(error, res));
+    };
 
     getAccounts = (req: Request, res: Response) => {
+        const { userId, page = 1, pageSize = 10 } = req.params;
+        const [error, paginationDto] = PaginationDto.createPagination(+page, +pageSize)
+        if (error) return res.status(400).json({ error })
 
-    }
+        this.accountService.getAccounts(paginationDto!, userId)
+            .then((accounts) => res.json({accounts}))
+            .catch(error => this.handleError(error, res))
+    };
 
-    deleteAccountById = (req: Request, res: Response) => {
-
-    }
+    disabledAccount = (req: Request, res: Response) => {
+        const [error, body] = DisabledAccountDto.create(req.body);
+        if (error) return res.status(400).json({ error })
+        
+        this.accountService.disabledAccount(body!)
+            .then((account) => res.json({account}))
+            .catch(error => this.handleError(error, res))
+    };
 
     updateAccount = (req: Request, res: Response) => {
 

@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { CustomError, PaginationDto } from "../../domain";
 import { CategoryService } from "../services/category.service";
 import { CategoryDto } from "../../domain/dtos/category/category.dto";
-import { CategoriesRequestModel } from '../../data/requestModels/category.models';
 
 
 export class CategoryController {
@@ -27,9 +26,8 @@ export class CategoryController {
     }
 
     getCategories = (req: Request, res: Response) => {
-        const { accountId, page = 1, pageSize = 10 } = req.body;
-        if(!accountId) return res.status(400).json({ error: "AccountId requerido" })
-        const [error, paginationDto] = PaginationDto.createPagination(page, pageSize);
+        const { accountId, page = 1, pageSize = 10 } = req.params;
+        const [error, paginationDto] = PaginationDto.createPagination(+page, +pageSize);
         if (error) return res.status(400).json({ error })
 
         this.categoryService.getCategories(accountId, paginationDto!).then((categories) => res.json(categories)).catch(error => this.handleError(error, res));
