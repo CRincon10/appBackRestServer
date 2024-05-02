@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthController } from './controller';
 import { envs } from '../../config/envs';
 import { EmailService, AuthService } from '../services';
+import { DiscordService } from '../services/discord.service';
 
 export class AuthRoutes {
 
@@ -17,8 +18,9 @@ export class AuthRoutes {
         );
 
         const authService = new AuthService(emailService);
+        const discordService = new DiscordService();
 
-        const controller = new AuthController(authService);
+        const controller = new AuthController(authService, discordService);
         // Definir las rutas
         router.use('/register', controller.registerUser );
         router.use('/login', controller.loginUser );

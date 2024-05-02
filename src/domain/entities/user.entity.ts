@@ -43,15 +43,14 @@ export class UserEntity {
             dateCreated,
         } = object
 
-        if (!id || !_id) throw CustomError.badRequestResult("Missing ID")
-        if (!name) throw CustomError.badRequestResult("Missing name")
-        if (!email) throw CustomError.badRequestResult("Missing email")
-        if (!documentIdentificationType) throw CustomError.badRequestResult("Missing documentIdentificationType")
-        if (!documentIdentificationNumber) throw CustomError.badRequestResult("Missing documentIdentificationNumber")
-        if (!emailValidated === undefined) throw CustomError.badRequestResult("Missing emailValidated")
-        if (!password) throw CustomError.badRequestResult("Missing password")
-        if (!roles) throw CustomError.badRequestResult("Missing role")
-        if (!dateCreated) throw CustomError.badRequestResult("Missing Date")
+        if (!id || !_id) throw CustomError.badRequestResult("Id requerido")
+        if (!name) throw CustomError.badRequestResult("Name requerido")
+        if (!email) throw CustomError.badRequestResult("Email requerido")
+        if (!documentIdentificationType) throw CustomError.badRequestResult("DocumentIdentificationType requerido")
+        if (!documentIdentificationNumber) throw CustomError.badRequestResult("DocumentIdentificationNumber requerido")
+        if (!password) throw CustomError.badRequestResult("Password requerida")
+        if (!roles) throw CustomError.badRequestResult("Role requerido")
+        if (!dateCreated) throw CustomError.badRequestResult("iDate requerida")
 
         return new UserEntity(
             _id || id,

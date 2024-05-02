@@ -1,8 +1,3 @@
-import { UserEntity } from "../../entities/user.entity";
-
-
-
-
 export class CategoryDto {
     
     private constructor(
@@ -17,7 +12,6 @@ export class CategoryDto {
         if(!name) return ["name requerido", undefined];
         if(!accountId) return ["accountId requerido", undefined];
 
-        //El user lo estoy asignando en el middleware de validación de ruta
         const userCreator = user.id
 
         return [undefined, new CategoryDto(name, accountId, userCreator,  )];

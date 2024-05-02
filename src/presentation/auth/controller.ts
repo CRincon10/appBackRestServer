@@ -2,12 +2,12 @@ import { Request, Response } from "express";
 import { CustomError, RegisterUserDto } from "../../domain";
 import { AuthService } from "../services/auth.service";
 import { LoginUserDto } from "../../domain/dtos/auth/login-user.dto";
+import { DiscordService } from "../services/discord.service";
 
 
 export class AuthController {
 
-    //inyección de dependencias
-    constructor(public readonly authService: AuthService) { }
+    constructor(public readonly authService: AuthService, private readonly discordService: DiscordService) { }
 
     private handleError = (error: unknown, res: Response) => {
         if (error instanceof CustomError) {
@@ -29,9 +29,11 @@ export class AuthController {
         const body = req.body;
         const [error, loginUserDto] = LoginUserDto.create(body)
         if (error) return res.status(400).json(error)
-
         this.authService.loginUser(loginUserDto!)
-            .then((resp) => res.json(resp))
+            .then((resp) => {
+                res.json(resp);
+                return this.discordService.notify(`Nuevo usuario registrado ${resp.user.name} ${resp.user.lastName} `);
+            })
             .catch(error => this.handleError(error, res));
     }
 

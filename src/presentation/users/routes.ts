@@ -1,21 +1,20 @@
 import { Router } from 'express';
-import { AccountService } from '../services/account.service';
-import { AccountsController } from './controller';
 import { AuthMiddleware } from '../middlewares/auth.middlewares';
+import { UserService } from '../services/user.service';
+import { UserController } from './controller';
 
-export class AccountRoutes {
+export class UserRoutes {
 
     static get routes(): Router {
 
         const router = Router();
 
+        const userService = new UserService();
 
-        const accountService = new AccountService();
-
-        const controller = new AccountsController(accountService);
-        // Definir las rutas
-        router.post('/', [AuthMiddleware.validateJWT], controller.createAccount);
-        router.post('/get-accounts',  controller.getAccounts);
+        const controller = new UserController(userService);
+        
+        router.post('/', [AuthMiddleware.validateJWT], controller.createUser);
+        router.post('/get-users',  controller.getUsers);
         router.put('/', controller.updateAccount);
         router.delete('/', controller.deleteAccountById);
 
