@@ -13,13 +13,19 @@ const categorySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    dateCreated: {
+    createdAt: {
         type: Date,
-        required: true,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
     },
     available: {
         type: String,
         default: true
+    },
+    userCreatorId: {
+        type: String
     },
     userCreator: {
         type: Schema.Types.ObjectId,

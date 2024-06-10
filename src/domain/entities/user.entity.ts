@@ -1,9 +1,12 @@
 import { CustomError } from "../errors/custom.error"
+import { AccountEntity } from "./account.entity";
 
 export interface UserSimpleResponse {
+    id: string;
     name: string;
     lastName?: string;
     image?: string;
+    status?: string;
 }
 
 
@@ -21,8 +24,14 @@ export class UserEntity {
         public emailValidated: boolean,
         public permissions: string[],
         public password: string,
-        public dateCreated: string,
+        public createdAt: string,
+        public updatedAt: string,
         public urlImage?: string,
+        public accountId?: string,
+        public account?: AccountEntity,
+        public organizationId?: string,
+        public organization?: string,
+        public status?: string,
     ) { }
 
     static createObjectUser(object: { [key: string]: any }) {
@@ -39,9 +48,15 @@ export class UserEntity {
             emailValidated,
             permissions,
             password,
+            createdAt,
+            updatedAt,
             urlImage,
-            dateCreated,
-        } = object
+            accountId,
+            account,
+            organizationId,
+            organization,
+            status
+        } = object;
 
         if (!id || !_id) throw CustomError.badRequestResult("Id requerido")
         if (!name) throw CustomError.badRequestResult("Name requerido")
@@ -50,7 +65,7 @@ export class UserEntity {
         if (!documentIdentificationNumber) throw CustomError.badRequestResult("DocumentIdentificationNumber requerido")
         if (!password) throw CustomError.badRequestResult("Password requerida")
         if (!roles) throw CustomError.badRequestResult("Role requerido")
-        if (!dateCreated) throw CustomError.badRequestResult("iDate requerida")
+        if (!createdAt) throw CustomError.badRequestResult("iDate requerida")
 
         return new UserEntity(
             _id || id,
@@ -64,18 +79,26 @@ export class UserEntity {
             emailValidated,
             permissions,
             password,
-            dateCreated,
+            createdAt,
+            updatedAt,
             urlImage,
+            accountId,
+            account,
+            organizationId,
+            organization,
+            status
         );
     }
 
-    static createSimpleResponseUser(value: UserEntity) {
-        const { name, lastName, urlImage } = value
+    static createSimpleResponseUser(object: { [key: string]: any }) {
+        const { id, name, lastName, urlImage, status } = object
         const userResponse: UserSimpleResponse = {
+            id,
             name,
             lastName,
-            image: urlImage
+            image: urlImage, 
+            status
         }
         return userResponse
     }
-}
+};

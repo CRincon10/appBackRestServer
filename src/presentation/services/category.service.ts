@@ -10,7 +10,7 @@ export class CategoryService {
 
     public async createCategory(categoryDto: CategoryDto) {
         const [account, category ] = await Promise.all([
-            AccountModel.findById(categoryDto.accountId).catch(error => {throw CustomError.badRequestResult("No se encontró la cuenta")}),
+            AccountModel.findById(categoryDto.accountId),
             CategoryModel.findOne({ name: categoryDto.name, accountId: categoryDto.accountId }),
         ]);
 
@@ -19,7 +19,6 @@ export class CategoryService {
 
         try {
             const newCategory = new CategoryModel(categoryDto);
-            newCategory.dateCreated = new Date();
             await newCategory.save();
             const {userCreator, ...category} = CategoryEntity.createCategoryEntity(newCategory);
             return category;

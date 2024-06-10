@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { RolesEnum, StatusEnum } from "../../../presentation/services/helper";
 
 const accountSchema = new mongoose.Schema({
     name: { 
@@ -34,9 +35,12 @@ const accountSchema = new mongoose.Schema({
             ref: "Organizations" 
         }
     ],
-    dateCreated: {
+    createdAt: {
         type: Date,
-        required: true,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
     },
     userOwnerId: { 
         type: String, 
@@ -48,18 +52,36 @@ const accountSchema = new mongoose.Schema({
     ],
     roles: { 
         type: [String], 
-        default: ["ADMIN_ACCOUNT", "USER_ORGANIZATION", "ADMIN_ORGANIZATION", "USER_CARGO_ASSISTANT", "USER"], 
-        enum: ["USER_OWNER_ACCOUNT", "ADMIN_ACCOUNT", "USER_ORGANIZATION", "ADMIN_ORGANIZATION", "USER_CARGO_ASSISTANT", "USER"]
+        default: [
+            "ADMIN_ACCOUNT", 
+            "USER_OWNER_ORGANIZATION", 
+            "ADMIN_ORGANIZATION", 
+            "ADMIN_ORGANIZATION",
+            "USER_CARGO_ASSISTANT",
+            "USER"], 
+        enum: RolesEnum
     },
     status: {
         type: String,
-        default: "active",
-        enum: ["active", "disabled", "paymentRequired"],
+        default: StatusEnum.ENABLED,
+        enum: StatusEnum
+    },
+    userCreatorId: {
+        type: String
     },
     userCreator: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true
+    },
+});
+
+accountSchema.set("toJSON", {
+    virtuals: true,
+    versionKey: false,
+    transform: function (doc, ret, options) {
+        delete ret._id;
+        delete ret.__V;
     },
 });
 

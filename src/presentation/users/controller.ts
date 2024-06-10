@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import { CustomError, RegisterUserDto } from "../../domain";
+import { CustomError, PaginationDto, RegisterUserDto } from "../../domain";
 import { AccountService } from "../services/account.service";
 import { AccountDto } from "../../domain/dtos/accounts/account.dto";
 import { UserService } from "../services/user.service";
+import { UpdateStatusUserDto, RequestGetUsersDto } from "../../domain/dtos/shared/requests/users.request.dto";
 
 export class UserController {
 
@@ -19,22 +20,32 @@ export class UserController {
 
     createUser = (req: Request, res: Response) => {
         const body = req.body;
-        const [error, userDto] = RegisterUserDto.create(body)
+        const [error, userDto] = RegisterUserDto.createUser(body)
         if (error) return res.status(400).json(error)
 
 
-        this.userService.createUser(userDto!).then((account) => res.json(account)).catch(error => this.handleError(error, res));
+        this.userService.createUpdateUser(userDto!).then((user) => res.json(user)).catch(error => this.handleError(error, res));
     }
 
     getUsers = (req: Request, res: Response) => {
+        const body = req.body;
+        const [errorRequest, request] = RequestGetUsersDto.create(body);
+        if (errorRequest) return res.status(400).json(errorRequest);
+        const [error] = PaginationDto.createPagination(request!.page, request!.pageSize);
+        if (error) return res.status(400).json(error);
+
+        this.userService.getUsers(request!).then((users) => res.json(users)).catch(error => this.handleError(error, res));
 
     }
 
-    deleteAccountById = (req: Request, res: Response) => {
-
+    changeStatusById = (req: Request, res: Response) => {
+        const body = req.body;
+        const [errorRequest, request] = UpdateStatusUserDto.create(body);
+        if (errorRequest) return res.status(400).json(errorRequest);
+        this.userService.changeUserStatus(request!).then((user) => res.json(user)).catch(error => this.handleError(error, res));
     }
 
-    updateAccount = (req: Request, res: Response) => {
+    updateUser = (req: Request, res: Response) => {
 
     }
 

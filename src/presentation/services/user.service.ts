@@ -1,66 +1,160 @@
+import { JwtAdapter, bcryptAdapter, envs } from "../../config";
 import { UserModel } from "../../data";
-import { CustomError, PaginationDto, RegisterUserDto, UserEntity } from "../../domain";
-import { DisabledAccountDto } from "../../domain/dtos/shared/requests/account.request.dto";
-import { AccountEntity } from '../../domain/entities/account.entity';
-import { validateUserAdmin } from "./helper";
-
+import { AccountModel } from "../../data/mongo/models/account.model";
+import { CustomError, RegisterUserDto, UserEntity } from "../../domain";
+import { RequestGetUsersDto, UpdateStatusUserDto } from "../../domain/dtos/shared/requests/users.request.dto";
+import { EmailService, SendMailOptions } from "./email.service";
+import { RolesEnum, RolesList, validateUserSuperAdmin } from "./helper";
 
 export class UserService {
 
-    constructor() { }
+    constructor(private readonly emailService: EmailService) { }
 
-    public async createUser(userDto: RegisterUserDto) {
-        const existUser = await UserModel.findOne({ documentIdentificationNumber: userDto.documentIdentificationType });
-        if (existUser) throw CustomError.badRequestResult("Ya existe un usuario con este numero de documento");
+    private readonly authorizedAccountRoles = [RolesEnum.USER_OWNER_ACCOUNT, RolesEnum.ADMIN_ACCOUNT];
+    private readonly authorizedOrganizationRoles = [RolesEnum.USER_OWNER_ORGANIZATION, RolesEnum.ADMIN_ORGANIZATION];
 
+    public async createUpdateUser(userDto: RegisterUserDto) {
         try {
-            const newUser = new UserModel(userDto);
-            newUser.dateCreated = new Date();
-            await newUser.save();
-            const { id, password, ...user } = UserEntity.createObjectUser(newUser);
-            return user;
+            // Verificar si estamos creando o actualizando
+            const isUpdate = !!userDto.id;
 
+            const [existUser, existAccount, existUserCreator] = await Promise.all([
+                isUpdate ? UserModel.findById(userDto.id) : UserModel.findOne({ email: userDto.email }),
+                AccountModel.findById(userDto.accountId),
+                UserModel.findById(userDto.userCreatorId)
+            ]);
+
+            if (!existAccount) {
+                throw CustomError.badRequestResult(`La cuenta con el accountId: ${userDto.accountId} no existe`);
+            }
+
+            if (isUpdate) {
+                // Actualización de usuario
+                if (!existUser) {
+                    throw CustomError.badRequestResult(`El usuario con el id: ${userDto.id} no existe`);
+                }
+
+                // Actualizar los campos necesarios del usuario
+                existUser.email = userDto.email;
+                existUser.accountId = userDto.accountId;
+                existUser.organizationId = userDto.organizationId;
+                existUser.documentIdentificationType = userDto.documentIdentificationType;
+                existUser.documentIdentificationNumber = userDto.documentIdentificationNumber;
+                existUser.organizationId = userDto.organizationId;
+                existUser.phoneNumber = userDto.phoneNumber;
+                existUser.name = userDto.name;
+                existUser.lastName = userDto.lastName;
+                existUser.roles = userDto.roles;
+
+                if (userDto.password) {
+                    existUser.password = await bcryptAdapter.hash(userDto.password);
+                }
+                // Otros campos que pueden necesitar actualización
+                existUser.updatedAt = new Date();
+
+                await existUser.save();
+
+                const { password, id, ...userEntity } = UserEntity.createObjectUser(existUser);
+
+                return { user: userEntity };
+
+            } else {
+                // Creación de usuario
+                if (existUser && existUser.accountId === userDto.accountId) {
+                    throw CustomError.badRequestResult(`El E-mail ${userDto.email} ya existe en esta cuenta`);
+                }
+
+                if (!existUserCreator) {
+                    throw CustomError.badRequestResult("Usuario creador no encontrado");
+                }
+
+                const user = new UserModel({
+                    ...userDto,
+                    password: await bcryptAdapter.hash(userDto.password)
+                });
+
+                const sendEmailValidate = await this.sendEmailAndValidateLink(user.email);
+                if (!sendEmailValidate) {
+                    throw CustomError.internalServer("Error interno al enviar el correo electrónico de validación");
+                }
+
+                await user.save();
+
+                const { password, id, ...userEntity } = UserEntity.createObjectUser(user);
+
+                return { user: userEntity };
+            }
         } catch (err) {
-            throw CustomError.internalServer(`${err}`)
+            throw CustomError.internalServer(`Error en la creación/actualización del usuario: ${err}`);
         }
     }
 
-    public async getUsers(pagination: PaginationDto, userId?: string) {
-        const { page, pagesize } = pagination;
+    private async sendEmailAndValidateLink(email: string) {
+        const token = await JwtAdapter.generateToken({ email });
+        if (!token) throw CustomError.internalServer("Error al intentar guardar JWT");
+
+        const link = `${envs.WEBSERVICE_URL}/auth/validate-email/${token}`;
+        const htmlBody = `
+            <h1>Construir body para el mensaje de validacion de creacion de usuario en la aplicacion</h1>
+            <p>Haz clic en el boton de validacion para confirmar tu email</p>
+            <a href="${link}">Valida tu email: ${email}</a>
+        `;
+
+        const options: SendMailOptions = {
+            to: email,
+            subject: "Verificación de email requerida",
+            htmlBody
+        };
+
+        const isSent = this.emailService && await this.emailService.sendEmail(options);
+        if (!isSent) throw CustomError.internalServer("Error al enviar en correo de verificación, es posible que el correo no exista");
+        return true;
+    };
+
+    public async getUsers(request: RequestGetUsersDto) {
+        const { page, pageSize, requestUserId, accountId, organizationId } = request;
+
+        let filter: any = {};
+        if (accountId) filter.accountId = accountId;
+        if (organizationId) filter.organizationId = organizationId;
 
         try {
-            let tasks: any[] = [
+            const [totalItems, userRequest, users] = await Promise.all([
                 UserModel.countDocuments(),
-                UserModel.find().populate("userCreator")
-                    .skip((page - 1) * pagesize)
-                    .limit(pagesize),
-            ];
+                UserModel.findById(requestUserId),
+                UserModel.find(filter).skip((page - 1) * pageSize).limit(pageSize),
+            ]);
 
-            if (userId) tasks.push(tasks.push(UserModel.findById(userId) as unknown as Promise<Document>));
+            if (!users) throw CustomError.badRequestResult("No se encontraron usuarios");
 
-            const [totalItems, accounts, user ] = await Promise.all(tasks);
-
-            if (accounts.length <= 0) {
-                throw CustomError.badRequestResult("No se encontraron cuentas");
+            if (!userRequest) {
+                throw CustomError.badRequestResult("Usuario que realiza la consulta no existe");
+            } else if (userRequest) {
+                if (!accountId && !organizationId) {
+                    const userIsAdmin = validateUserSuperAdmin(userRequest.roles);
+                    if (!userIsAdmin) throw CustomError.unauthorized("Usuario no autorizado para realizar esta acción");
+                }
+                if (accountId) {
+                    const userAccountAuthorized = this.authorizedAccountRoles.some(role => userRequest.roles.includes(role));
+                    if (!userAccountAuthorized) throw CustomError.unauthorized("Usuario de cuenta no autorizado");
+                } else if (organizationId) {
+                    const userOrganizationAuthorized = this.authorizedOrganizationRoles.some(role => userRequest.roles.includes(role));
+                    if (!userOrganizationAuthorized) throw CustomError.unauthorized("Usuario de organización no autorizado");
+                }
             }
 
-            if (userId && !user) {
-                throw CustomError.badRequestResult("Usuario no encontrado");
-            } else if (userId && user) {
-                const userIsAdmin = validateUserAdmin(UserEntity.createObjectUser(user));
-                if (!userIsAdmin) throw CustomError.unauthorized("Usuario no autorizado");
-            }
-
-            const createEntity = userId ? AccountEntity.createAccountEntity : AccountEntity.createSimpleResponseAccounts;
-            const mappedAccounts = accounts.map((x: typeof UserModel) => createEntity(x));
+            const usersMapped = users.map((user) => {
+                const { password, ...userEntity } = UserEntity.createObjectUser(user)
+                return userEntity
+            });
 
             return {
-                accounts: mappedAccounts,
+                users: usersMapped,
                 page,
-                pagesize,
-                items: mappedAccounts.length,
+                pageSize,
+                items: users.length,
                 totalItems,
-                nextPage: page * pagesize < totalItems ? page + 1 : null,
+                nextPage: page * pageSize < totalItems ? page + 1 : null,
                 prevPage: page - 1 > 0 ? page - 1 : null
             };
 
@@ -70,27 +164,55 @@ export class UserService {
             } else {
                 throw CustomError.internalServer(`${err}`);
             }
-        }
+        };
     };
 
-    public async disabledUser(dto: DisabledAccountDto){
-        try{
-            const account = await UserModel.findById(dto.accountId);
-            if(!account) throw CustomError.badRequestResult("Cuenta no existe");
-            const userIsAdmin = validateUserAdmin(dto.user);
-            if(!userIsAdmin) throw CustomError.unauthorized("Usuario no autorizado para realizar esta acción");
+    public async changeUserStatus(dto: UpdateStatusUserDto) {
+        try {
+            const [targetUser, userRequest] = await Promise.all([
+                UserModel.findById(dto.userIdToChangeStatus),
+                UserModel.findById(dto.requestUserId)
+            ]);
 
-            account.status = "disabled";
-            await account.save();
-            return account;
+            if (!userRequest) throw CustomError.badRequestResult("Usuario que realiza solicitud no existe.");
+            if (!targetUser) throw CustomError.badRequestResult(`Usuario con el Id ${dto.userIdToChangeStatus} no existe.`);
+            if (targetUser.id === userRequest.id) throw CustomError.badRequestResult("No puedes desactivar tu usuario");
 
-        }catch (err) {
+            const userIsSuperAdmin = validateUserSuperAdmin(userRequest.roles);
+
+            if (!userIsSuperAdmin) {
+                if (dto.accountId) {
+                    if (this.authorizedAccountRoles.some(role => userRequest.roles.includes(role)))
+                        throw CustomError.badRequestResult("Usuario no autorizado para realizar esta acción");
+                    if (dto.accountId !== userRequest.accountId)
+                        throw CustomError.badRequestResult("Usuario que realiza solicitud no pertenece a esta cuenta");
+                    if (dto.accountId !== targetUser.accountId)
+                        throw CustomError.badRequestResult(`El Usuario con el Id ${targetUser.id} no pertenece a esta cuenta`);
+                } else if (dto.organizationId && targetUser.organizationId) {
+                    if (this.authorizedOrganizationRoles.some(role => userRequest.roles.includes(role)))
+                        throw CustomError.badRequestResult("Usuario no autorizado para realizar esta acción");
+                    if (dto.organizationId !== userRequest.organizationId)
+                        throw CustomError.badRequestResult("Usuario que realiza la solicitud no pertenece a esta organización");
+                    if (dto.organizationId !== targetUser.organizationId)
+                        throw CustomError.badRequestResult(`El Usuario con el Id ${targetUser.id} no pertenece a esta organización`);
+                }
+            };
+
+            targetUser.status = dto.status;
+            await targetUser.save();
+
+            return {
+                userUpdated: UserEntity.createSimpleResponseUser(targetUser)
+            }
+
+        } catch (err) {
             if (err instanceof CustomError) {
                 throw err;
             } else {
                 throw CustomError.internalServer(`${err}`);
             }
-        }
+        };
     };
 
-}
+
+};

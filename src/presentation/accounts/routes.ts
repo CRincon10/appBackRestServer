@@ -17,7 +17,7 @@ export class AccountRoutes {
         router.post('/', [AuthMiddleware.validateJWT], controller.createAccount);
         router.get('/get-accounts/:userId?',  controller.getAccounts);
         router.put('/', controller.updateAccount);
-        router.post('/disabled-account', [AuthMiddleware.validateJWT], controller.disabledAccount);
+        router.post('/change-status', controller.changeStatusAccount);
 
         return router;
     }

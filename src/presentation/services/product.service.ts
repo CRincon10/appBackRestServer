@@ -17,7 +17,6 @@ export class ProductService {
 
         try {
             const newProduct = new ProductModel(productDto);
-            newProduct.dateCreated = new Date();
             await newProduct.save();
             return newProduct;
 

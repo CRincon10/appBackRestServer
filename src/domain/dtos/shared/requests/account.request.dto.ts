@@ -3,15 +3,17 @@ import { UserEntity } from "../../../entities/user.entity";
 export class DisabledAccountDto {
     private constructor(
         public readonly accountId: string,
-        public readonly user: UserEntity,
+        public readonly userRequestId: string,
+        public readonly status: string,
     ) { }
 
     static create(object: { [key: string]: any }): [string?, DisabledAccountDto?] {
-        const { accountId, user } = object;
+        const { accountId, userRequestId, status } = object;
 
         if (!accountId) return ["accountId requerido", undefined];
-        if (!user) return ["userId requerido", undefined];
+        if (!userRequestId) return ["userRequestId requerido", undefined];
+        if (!userRequestId) return ["userRequestId requerido", undefined];
 
-        return [undefined, new DisabledAccountDto(accountId, user)];
+        return [undefined, new DisabledAccountDto(accountId, userRequestId, status)];
     }
 }

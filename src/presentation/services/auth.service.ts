@@ -1,36 +1,49 @@
 import { JwtAdapter, bcryptAdapter, envs } from "../../config";
 import { UserModel } from "../../data";
+import { AccountModel } from "../../data/mongo/models/account.model";
 import { CustomError, RegisterUserDto, UserEntity } from "../../domain";
 import { LoginUserDto } from "../../domain/dtos/auth/login-user.dto";
+import { AccountEntity } from "../../domain/entities/account.entity";
 import { EmailService, SendMailOptions } from './email.service';
 import jwt from 'jsonwebtoken';
 
 export class AuthService {
     //DI
     constructor(
-        private readonly emailService: EmailService
+        private readonly emailService?: EmailService
     ) { }
 
     public async registerUser(registerDto: RegisterUserDto) {
         const existUser = await UserModel.findOne({ email: registerDto.email });
         if (existUser) throw CustomError.badRequestResult("Ya existe un usuario con este Email");
+        if (registerDto.account) {
+            const existAccount = await AccountModel.findById(registerDto.account);
+            if (!existAccount) throw CustomError.badRequestResult(`La cuenta con el accountId: ${registerDto.account}, no existe`);
+        };
+        if (registerDto.userCreatorId) {
+            const existUserCreator = await UserModel.findById(registerDto.userCreatorId);
+            if (!existUserCreator)
+                throw CustomError.badRequestResult(
+                    `Usuario creador no encontrado`
+                );
+        };
 
         try {
-            const user = new UserModel(registerDto);
-            user.password = bcryptAdapter.hash(registerDto.password);
-            user.dateCreated = new Date();
-
-            await user.save();
+            const user = new UserModel({
+                ...registerDto,
+                password: await bcryptAdapter.hash(registerDto.password)
+            });
 
             const sendEmailValidate = await this.sendEmailAndValidateLink(user.email);
-            if(!sendEmailValidate) throw CustomError.internalServer("Error al intentar enviar correo de validación")
-
+            if (!sendEmailValidate) throw CustomError.internalServer("Error interno");
+            
+            await user.save();
+            
             const { password, ...userEntity } = UserEntity.createObjectUser(user);
 
             const token = await JwtAdapter.generateToken({ userId: user.id });
             if (!token) throw CustomError.internalServer("Error al intentar guardar JWT")
 
-            //devuelve el objeto sin la contraseña
             return {
                 user: userEntity,
                 token
@@ -78,20 +91,20 @@ export class AuthService {
             htmlBody
         };
 
-        const isSent = await this.emailService.sendEmail(options);
-        if (!isSent) throw CustomError.internalServer("Error al enviar en correo de verificación");
+        const isSent = this.emailService && await this.emailService.sendEmail(options);
+        if (!isSent) throw CustomError.internalServer("Error al enviar en correo de verificación, es posible que el correo no exista");
         return true;
-    }
+    };
 
-    public validateEmailToken = async(token: string) => {
+    public validateEmailToken = async (token: string) => {
         const payload = await JwtAdapter.validateToken<{ email: string }>(token);
-        if ( !payload ) throw CustomError.unauthorized('Invalid token');
+        if (!payload) throw CustomError.unauthorized('Invalid token');
 
         const { email } = payload;
         if (!email) throw CustomError.badRequestResult("Email no existe en el token");
 
-        const user = await UserModel.findOne({email});
-        if(!user) throw CustomError.badRequestResult("Usuario no se encontró en la base de datos");
+        const user = await UserModel.findOne({ email });
+        if (!user) throw CustomError.badRequestResult("Usuario no se encontró en la base de datos");
 
         user.emailValidated = true;
         await user.save();

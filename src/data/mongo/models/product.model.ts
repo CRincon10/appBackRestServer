@@ -1,19 +1,20 @@
 import mongoose, { Schema } from "mongoose";
 
 const productSchema = new mongoose.Schema({
+    accountId: {
+        type: String,
+        required: true,
+    },
     account: {
         type: Schema.Types.ObjectId,
         ref: "Account",
-        required: true,
+    },
+    categoryId: {
+        type: String
     },
     category: {
         type: Schema.Types.ObjectId,
         ref: "Category",
-        required: true,
-    },
-    userCreator: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
         required: true,
     },
     taxes: [
@@ -26,9 +27,12 @@ const productSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    dateCreated: {
+    createdAt: {
         type: Date,
-        required: true,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
     },
     lastDateUpdated: {
         type: Date,
@@ -42,6 +46,14 @@ const productSchema = new mongoose.Schema({
     },
     urlImage: {
         type: String,
+    },
+    userCreatorId: {
+        type: String
+    },
+    userCreator: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     },
 });
 

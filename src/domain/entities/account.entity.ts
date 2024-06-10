@@ -6,6 +6,7 @@ import { UserEntity, UserSimpleResponse } from "./user.entity";
 export class AccountEntity {
 
     constructor(
+        public id: string,
         public name: string,
         public documentType: boolean,
         public documentNumber: boolean,
@@ -17,7 +18,7 @@ export class AccountEntity {
     ){}
 
     static createAccountEntity(object: {[key: string]:any }){
-        const {name, documentType, documentNumber,  userCreator, users, permissions, organizations, urlImage } = object;
+        const {id, name, documentType, documentNumber,  userCreator, users, permissions, organizations, urlImage } = object;
         let user = undefined;
 
         if(!name) throw CustomError.badRequestResult("Nombre de la cuenta requerido");
@@ -28,13 +29,11 @@ export class AccountEntity {
             user = UserEntity.createSimpleResponseUser(userCreator)
         };
 
-        if(users) users.map((x:any) => UserEntity.createObjectUser(x));
-
-        return new AccountEntity(name, documentType, documentNumber, user, users, permissions, organizations, urlImage);
+        return new AccountEntity(id, name, documentType, documentNumber, user, users, permissions, organizations, urlImage);
     }
 
-    static createSimpleResponseAccounts(object: {[key: string]:any }){
-        const {name, documentType, documentNumber, urlImage } = object;
-        return new AccountEntity(name, documentType, documentNumber, urlImage);
+    static createSimpleResponseAccount(object: {[key: string]:any }){
+        const {id, name, documentType, documentNumber, urlImage, status } = object;
+        return new AccountEntity(id, name, documentType, documentNumber, urlImage, status);
     }
 }

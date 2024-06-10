@@ -1,10 +1,14 @@
 import mongoose, { Schema } from "mongoose";
+import { RolesEnum, StatusEnum } from "../../../presentation/services/helper";
 
 const organizationSchema = new mongoose.Schema({
-    accountId: { 
+    accountId: {
+        type: String,
+        required: true
+    },
+    account: { 
         type: Schema.Types.ObjectId, 
-        ref: "Account", 
-        required: [true] 
+        ref: "Account",
     },
     name: { 
         type: String, 
@@ -21,11 +25,6 @@ const organizationSchema = new mongoose.Schema({
         required: [true, "Numero de documento requerido"],
         unique: true
     },
-    roles: { 
-        type: [String], 
-        default: ["USER", "ADMIN", "CARGO_ASSISTANT"], 
-        enum: ["OWNER_USER_ACCOUNT", "USER", "ADMIN", "CARGO_ASSISTANT"] 
-    },
     users: [{ 
         type: Schema.Types.ObjectId, 
         ref: "User",
@@ -35,7 +34,7 @@ const organizationSchema = new mongoose.Schema({
     },
     userOwnerId: {
         type: String, 
-        required: [true, "Id de usuario principal requerida"] 
+        required: [true, "Id de usuario principal requerido"] 
     },
     validatorUserAccountId: {
         type:String 
@@ -55,6 +54,23 @@ const organizationSchema = new mongoose.Schema({
         type: String, 
         required: [true, "Numero de teléfono requerido"], 
         unique: true 
+    },
+    roles: { 
+        type: [String], 
+        default: ["USER_ORGANIZATION", "ADMIN_ORGANIZATION", "USER_CARGO_ASSISTANT", "USER"], 
+        enum: RolesEnum
+    },
+    status: {
+        type: String,
+        default: StatusEnum.ENABLED,
+        enum: StatusEnum
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
     },
 });
 

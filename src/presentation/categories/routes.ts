@@ -12,8 +12,8 @@ export class CategoryRoutes {
 
         const controller = new CategoryController(categoryService);
 
-        router.post("/", [AuthMiddleware.validateJWT], controller.createCategory);
-        router.get("/:accountId", CategoriesMiddlewares.validateMongoId, controller.getCategories);
+        router.post("/", controller.createCategory);
+        router.get("/:accountId", controller.getCategories);
         router.put("/", controller.updateCategory);
         router.delete("/", controller.deleteCategory);
 

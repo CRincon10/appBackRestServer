@@ -19,13 +19,10 @@ export class AccountsController {
 
     createAccount = (req: Request, res: Response) => {
         const body = req.body;
-        const [error, accountDto] = AccountDto.create(body)
+        const [error, accountDto] = AccountDto.createAccount(body)
         if (error) return res.status(400).json(error)
 
-
-        this.accountService.createAccount(accountDto!)
-            .then((account) => res.json({account}))
-            .catch(error => this.handleError(error, res));
+        this.accountService.createAccount(accountDto!).then((account) => res.json({account})).catch(error => this.handleError(error, res));
     };
 
     getAccounts = (req: Request, res: Response) => {
@@ -38,11 +35,11 @@ export class AccountsController {
             .catch(error => this.handleError(error, res))
     };
 
-    disabledAccount = (req: Request, res: Response) => {
+    changeStatusAccount = (req: Request, res: Response) => {
         const [error, body] = DisabledAccountDto.create(req.body);
         if (error) return res.status(400).json({ error })
         
-        this.accountService.disabledAccount(body!)
+        this.accountService.changeStatusAccount(body!)
             .then((account) => res.json({account}))
             .catch(error => this.handleError(error, res))
     };

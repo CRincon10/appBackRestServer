@@ -1,5 +1,4 @@
 import nodemailer, { Transporter } from "nodemailer";
-import { envs } from "../../config";
 
 export interface SendMailOptions {
     to: string | string[];
@@ -49,8 +48,5 @@ export class EmailService {
             console.log(`Error al enviar email - ${error}`)
             return false;
         }
-    }
-
-
-
+    };
 }

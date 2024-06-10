@@ -27,6 +27,7 @@ export class CategoryController {
 
     getCategories = (req: Request, res: Response) => {
         const { accountId, page = 1, pageSize = 10 } = req.params;
+        if(!accountId) throw res.status(500).json({ error: "AccountId es requerido" });
         const [error, paginationDto] = PaginationDto.createPagination(+page, +pageSize);
         if (error) return res.status(400).json({ error })
 
