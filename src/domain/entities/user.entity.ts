@@ -3,7 +3,7 @@ import { AccountEntity } from "./account.entity";
 
 export interface UserSimpleResponse {
     id: string;
-    name: string;
+    firstName: string;
     lastName?: string;
     image?: string;
     status?: string;
@@ -14,7 +14,7 @@ export class UserEntity {
 
     constructor(
         public id: string,
-        public name: string,
+        public firstName: string,
         public lastName: string,
         public documentIdentificationType: string,
         public documentIdentificationNumber: number,
@@ -38,7 +38,7 @@ export class UserEntity {
         const {
             id,
             _id,
-            name,
+            firstName,
             lastName,
             documentIdentificationType,
             documentIdentificationNumber,
@@ -59,7 +59,7 @@ export class UserEntity {
         } = object;
 
         if (!id || !_id) throw CustomError.badRequestResult("Id requerido")
-        if (!name) throw CustomError.badRequestResult("Name requerido")
+        if (!firstName) throw CustomError.badRequestResult("firstName requerido")
         if (!email) throw CustomError.badRequestResult("Email requerido")
         if (!documentIdentificationType) throw CustomError.badRequestResult("DocumentIdentificationType requerido")
         if (!documentIdentificationNumber) throw CustomError.badRequestResult("DocumentIdentificationNumber requerido")
@@ -69,7 +69,7 @@ export class UserEntity {
 
         return new UserEntity(
             _id || id,
-            name,
+            firstName,
             lastName,
             documentIdentificationType,
             documentIdentificationNumber,
@@ -91,10 +91,10 @@ export class UserEntity {
     }
 
     static createSimpleResponseUser(object: { [key: string]: any }) {
-        const { id, name, lastName, urlImage, status } = object
+        const { id, firstName, lastName, urlImage, status } = object
         const userResponse: UserSimpleResponse = {
             id,
-            name,
+            firstName,
             lastName,
             image: urlImage, 
             status

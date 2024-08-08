@@ -4,7 +4,7 @@ import { RolesList } from '../../../presentation/services/helper';
 
 export class RegisterUserDto {
     private constructor(
-        public readonly name: string,
+        public readonly firstName: string,
         public readonly lastName: string,
         public readonly documentIdentificationType: string,
         public readonly documentIdentificationNumber: number,
@@ -23,10 +23,10 @@ export class RegisterUserDto {
 
     static createUser(object: { [key: string]: any }): [string?, RegisterUserDto?] {
         const {
-            name, lastName, documentIdentificationType, documentIdentificationNumber, email, phoneNumber, password, roles, id, accountId, organizationId, userCreatorId
+            firstName, lastName, documentIdentificationType, documentIdentificationNumber, email, phoneNumber, password, roles, id, accountId, organizationId, userCreatorId
         } = object;
 
-        if (!name) return ["name requerido", undefined];
+        if (!firstName) return ["firstName requerido", undefined];
         if (!lastName) return ["lastName requerido", undefined];
         if (!documentIdentificationType) return ["documentIdentificationType requerido", undefined];
         if (!documentIdentificationNumber) return ["documentIdentificationNumber requerido", undefined];
@@ -41,7 +41,7 @@ export class RegisterUserDto {
         return [
             undefined,
             new RegisterUserDto(
-                name,
+                firstName,
                 lastName,
                 documentIdentificationType,
                 documentIdentificationNumber,

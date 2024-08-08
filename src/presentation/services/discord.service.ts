@@ -1,4 +1,5 @@
 import { envs } from "../../config";
+import fetch from 'node-fetch';
 
 
 export class DiscordService {

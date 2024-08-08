@@ -24,7 +24,9 @@ export const RolesList: RolesEnum[] = [
 export enum StatusEnum {
     ENABLED = "ENABLED",
     DISABLED = "DISABLED",
-    PAYMENT_REQUIRED = "PAYMENT_REQUIRED"
+    PENDING = "PENDING",
+    SUSPENDED = "SUSPENDED",
+    PAYMENT_REQUIRED = "PAYMENT_REQUIRED",
 };
 
 export const StatusList: StatusEnum[] = [

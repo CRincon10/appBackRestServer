@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: "Organization",
     },
-    name: {
+    firstName: {
         type: String,
         required: [true, "Nombre requerido"]
     },

@@ -25,7 +25,7 @@ export class UserController {
 
 
         this.userService.createUpdateUser(userDto!).then((user) => res.json(user)).catch(error => this.handleError(error, res));
-    }
+    };
 
     getUsers = (req: Request, res: Response) => {
         const body = req.body;
@@ -36,6 +36,13 @@ export class UserController {
 
         this.userService.getUsers(request!).then((users) => res.json(users)).catch(error => this.handleError(error, res));
 
+    };
+
+    getUserById = (req: Request, res: Response) => {
+        const { userId } = req.params;
+        if(!userId) throw res.status(500).json({ error: "userId es requerido" });
+        
+        this.userService.getUserById(userId).then((user) => res.json(user)).catch(error => this.handleError(error, res));
     }
 
     changeStatusById = (req: Request, res: Response) => {

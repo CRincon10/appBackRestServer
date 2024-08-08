@@ -22,8 +22,9 @@ export class AuthRoutes {
 
         const controller = new AuthController(authService, discordService);
         // Definir las rutas
-        router.use('/register', controller.registerUser );
-        router.use('/login', controller.loginUser );
+        router.post('/register', controller.registerUser );
+        router.post('/login', controller.loginUser );
+        router.post('/login/social', controller.socialLogin );
         router.use('/validate-email/:token', controller.validateEmailUser );
         return router;
     }
