@@ -67,7 +67,7 @@ export class AuthService {
             accountUser: userEntity,
             token,
         };
-    }
+    } 
 
     public async socialLogin(socialPayload: ISocialPayload) {
         const { providerName, tokenId, email } = socialPayload;
