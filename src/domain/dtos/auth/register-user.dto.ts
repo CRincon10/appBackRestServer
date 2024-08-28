@@ -1,29 +1,70 @@
 import { regularExps } from "../../../config";
-import { RolesList } from '../../../presentation/services/helper';
-
+import { City, State, TypeRegister, TypeRegisterList, UserDocumentType } from "../../../presentation/auth/helper";
+import { RolesEnum, RolesList } from "../../../presentation/services/helper";
 
 export class RegisterUserDto {
     private constructor(
         public readonly firstName: string,
         public readonly lastName: string,
-        public readonly documentIdentificationType: string,
+        public readonly documentIdentificationType: UserDocumentType,
         public readonly documentIdentificationNumber: number,
         public readonly email: string,
         public readonly phoneNumber: number,
         public readonly password: string,
-        public readonly roles: string[],
-        public readonly id?: string,
+        public readonly typeRegister: TypeRegister,
+        public readonly roles: RolesEnum[],
+        public readonly firebaseId?: string,
+        public readonly firebaseProviderName?: string,
+        public readonly address?: string,
+        public readonly city?: City,
+        public readonly state?: State,
+
+        //datos cuando se crea un usuario
         public readonly accountId?: string,
-        public readonly account?: string,
         public readonly organizationId?: string,
-        public readonly organization?: string,
+        public readonly id?: string,
         public readonly userCreatorId?: string,
-        public readonly userCreator?: string
+
+        //campos de creacion de organizacion
+        public readonly organizationName?: string,
+        public readonly documentIdentificationNumberOrganization?: number,
+        public readonly documentIdentificationTypeOrganization?: UserDocumentType,
+        public readonly emailOrganization?: string,
+        public readonly phoneNumberOrganization?: number,
+        public readonly addressOrganization?: string,
+        public readonly cityOrganization?: City,
+        public readonly stateOrganization?: State
     ) {}
 
     static createUser(object: { [key: string]: any }): [string?, RegisterUserDto?] {
         const {
-            firstName, lastName, documentIdentificationType, documentIdentificationNumber, email, phoneNumber, password, roles, id, accountId, organizationId, userCreatorId
+            firstName,
+            lastName,
+            documentIdentificationType,
+            documentIdentificationNumber,
+            email,
+            phoneNumber,
+            password,
+            typeRegister,
+            roles,
+            firebaseId,
+            firebaseProviderName,
+            address,
+            city,
+            state,
+            accountId,
+            organizationId,
+            id,
+            userCreatorId,
+
+            organizationName,
+            documentIdentificationNumberOrganization,
+            documentIdentificationTypeOrganization,
+            emailOrganization,
+            phoneNumberOrganization,
+            addressOrganization,
+            cityOrganization,
+            stateOrganization,
         } = object;
 
         if (!firstName) return ["firstName requerido", undefined];
@@ -36,7 +77,7 @@ export class RegisterUserDto {
         if (!password) return ["Contraseña requerida", undefined];
         if (!regularExps.password.test(password)) return ["Formato de contraseña invalido", undefined];
         if (!roles || !Array.isArray(roles) || roles.length === 0) return ["roles de usuario requeridos", undefined];
-        if (!roles.every(role => RolesList.includes(role))) return ["roles inválidos", undefined];
+        if (!roles.every((role) => RolesList.includes(role))) return ["roles inválidos", undefined];
 
         return [
             undefined,
@@ -48,15 +89,26 @@ export class RegisterUserDto {
                 email,
                 phoneNumber,
                 password,
+                typeRegister,
                 roles,
-                id,
+                firebaseId,
+                firebaseProviderName,
+                address,
+                city,
+                state,
                 accountId,
-                accountId, // Asignar accountId directamente a account
                 organizationId,
-                organizationId, // Asignar organizationId directamente a organization
+                id,
                 userCreatorId,
-                userCreatorId // Asignar userCreatorId directamente a userCreator
-            )
+                organizationName,
+                documentIdentificationNumberOrganization,
+                documentIdentificationTypeOrganization,
+                emailOrganization,
+                phoneNumberOrganization,
+                addressOrganization,
+                cityOrganization,
+                stateOrganization
+            ),
         ];
     }
 }

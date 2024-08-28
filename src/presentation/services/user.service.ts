@@ -219,7 +219,7 @@ export class UserService {
             const accountUser = await UserModel.findById(userId);
             if (!accountUser) throw CustomError.notFound(`User with ID ${userId} not found`);
             const { password, id, ...userEntity } = UserEntity.createObjectUser(accountUser);
-            return { accountUser: userEntity };
+            return { ...userEntity };
     
         } catch (err) {
             if (err instanceof CustomError) {

@@ -55,6 +55,12 @@ const userSchema = new mongoose.Schema({
     address: {
         type: String
     },
+    city: {
+        type: Schema.Types.Mixed,
+    },
+    state: {
+        type: Schema.Types.Mixed,
+    },
     urlImage: {
         type: String
     },
@@ -68,6 +74,10 @@ const userSchema = new mongoose.Schema({
     validatorUserId: {
         type: String
     },
+    validationIsOpened: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -77,9 +87,8 @@ const userSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: StatusEnum.ENABLED,
+        default: StatusEnum.PENDING,
         enum: StatusEnum,
-        required: true
     },
     userCreatorId: {
         type: String

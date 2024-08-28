@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client";
 import { JwtAdapter, bcryptAdapter, envs } from "../../config";
 import { UserModel } from "../../data";
 import { AccountModel } from "../../data/mongo/models/account.model";
@@ -13,16 +14,21 @@ export class AuthService {
     private readonly googleClient = new OAuth2Client(envs.GOOGLE_CLIENT_ID);
 
     public async registerUser(registerDto: RegisterUserDto) {
+        const userPrisma = new PrismaClient().user.findUnique({ where: { email: registerDto.email } });
+
+        if(!userPrisma) {
+            console.log("No existe el usuario en la base de datos de Prisma");
+        }
+
+
+        console.log("object", userPrisma);
+
         const existUser = await UserModel.findOne({ email: registerDto.email });
         if (existUser) throw CustomError.badRequestResult("Ya existe un usuario con este Email");
-        if (registerDto.account) {
-            const existAccount = await AccountModel.findById(registerDto.account);
-            if (!existAccount) throw CustomError.badRequestResult(`La cuenta con el accountId: ${registerDto.account}, no existe`);
-        }
-        if (registerDto.userCreatorId) {
-            const existUserCreator = await UserModel.findById(registerDto.userCreatorId);
-            if (!existUserCreator) throw CustomError.badRequestResult(`Usuario creador no encontrado`);
-        }
+        if (registerDto.accountId) {
+            const existAccount = await AccountModel.findById(registerDto.accountId);
+            if (!existAccount) throw CustomError.badRequestResult(`La cuenta con el accountId: ${registerDto.accountId}, no existe`);
+        };
 
         try {
             const user = new UserModel({
@@ -41,12 +47,12 @@ export class AuthService {
             if (!token) throw CustomError.internalServer("Error al intentar guardar JWT");
 
             return {
-                user: userEntity,
+                accountUser: userEntity,
                 token,
             };
         } catch (err) {
             throw CustomError.internalServer(`${err}`);
-        }
+        };
     }
 
     public async loginUser(loginUser: ILoginUser) {
@@ -106,7 +112,7 @@ export class AuthService {
             if (!token) throw CustomError.internalServer('Error al intentar generar JWT');
 
             return {
-                user: userEntity,
+                accountUser: userEntity,
                 token
             };
 
@@ -148,11 +154,11 @@ export class AuthService {
         const { email } = payload;
         if (!email) throw CustomError.badRequestResult("Email no existe en el token");
 
-        const user = await UserModel.findOne({ email });
-        if (!user) throw CustomError.badRequestResult("Usuario no se encontró en la base de datos");
+        const accountUser = await UserModel.findOne({ email });
+        if (!accountUser) throw CustomError.badRequestResult("Usuario no se encontró en la base de datos");
 
-        user.emailValidated = true;
-        await user.save();
+        accountUser.emailValidated = true;
+        await accountUser.save();
         return true;
     };
 }

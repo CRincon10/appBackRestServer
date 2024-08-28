@@ -1,8 +1,6 @@
 import express, { NextFunction, Router } from 'express';
 import cors from 'cors'
 import path from 'path';
-import { CustomError } from '../domain';
-import errorMiddleware from './middlewares/error.middlewares';
 
 interface Options {
     port: number;
@@ -44,9 +42,6 @@ export class Server {
 
         //* Routes
         this.app.use(this.routes);
-
-        // Middleware de Manejo de Errores
-        this.app.use(errorMiddleware);
 
         this.serverListener = this.app.listen(this.port, () => {
             console.log(`Server running on port ${this.port}`);

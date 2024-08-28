@@ -23,7 +23,7 @@ export class UserRoutes {
         
         // router.post('/', [AuthMiddleware.validateJWT], controller.createUser);  Verificar si quiero que todas las rutas pasen por el middleware de validacion de usuario
         router.post('/', controller.createUser);
-        router.get('/get-userById:userId', controller.getUserById)
+        router.get('/get-userById/:userId', controller.getUserById)
         router.post('/get-users',  controller.getUsers);
         router.post('/change-status', controller.changeStatusById);
         router.put('/', controller.updateUser);

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsnd --respawn src/app.ts",
     "build": "rimraf ./dist && tsc",
-    "start": "npm run build && node dist/app.js"
+    "start": "npm run build && node dist/app.js",
+    "migrate": "ts-node migrate.ts"
   },
   "keywords": [],
   "author": "",
@@ -19,11 +20,14 @@
     "@types/node": "^20.8.0",
     "@types/node-fetch": "^2.6.11",
     "@types/nodemailer": "^6.4.14",
+    "prisma": "^5.19.0",
     "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@prisma/client": "^5.19.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

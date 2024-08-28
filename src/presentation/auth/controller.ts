@@ -20,7 +20,7 @@ export class AuthController {
 
     private handleError = (error: unknown, res: Response) => {
         if (error instanceof CustomError) {
-            return res.status(error.statusCode).json({ error: { message: error.message } });
+            return res.status(error.statusCode).json({ message: error.message });
         };
         console.log("Error", `${error}`);
         throw res.status(500).json({ error: "Internal Server Error" });
@@ -37,7 +37,7 @@ export class AuthController {
     loginUser = (req: Request, res: Response) => {
         const body: ILoginUser = req.body;
         if (!body.email || !body.password) {
-            return res.status(400).json({ error: 'Invalid payload' });
+            return res.status(400).json({message:"Solicitud invalida faltan campos requeridos"});
         };
 
         this.authService.loginUser(body)
@@ -51,13 +51,13 @@ export class AuthController {
     socialLogin = (req: Request, res: Response) => {
         const body: ISocialPayload = req.body;
         if (!body.providerName || !body.tokenId || !body.email) {
-            return res.status(400).json({ error: 'Invalid payload' });
+            return res.status(400).json({ message: 'Solicitud invalida faltan campos requeridos' });
         };
 
         this.authService.socialLogin(body)
             .then((resp) => {
                 res.json(resp);
-                return this.discordService.notify(`Nuevo usuario registrado con ${body.providerName}: ${resp.user.firstName} ${resp.user.lastName}`);
+                return this.discordService.notify(`Nuevo usuario registrado con ${body.providerName}: ${resp.accountUser.firstName} ${resp.accountUser.lastName}`);
             })
             .catch(error => this.handleError(error, res));
     };

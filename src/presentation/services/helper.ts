@@ -32,6 +32,8 @@ export enum StatusEnum {
 export const StatusList: StatusEnum[] = [
     StatusEnum.ENABLED,
     StatusEnum.DISABLED,
+    StatusEnum.PENDING,
+    StatusEnum.SUSPENDED,
     StatusEnum.PAYMENT_REQUIRED
 ];
 

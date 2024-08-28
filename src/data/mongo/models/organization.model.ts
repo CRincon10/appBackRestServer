@@ -10,18 +10,18 @@ const organizationSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId, 
         ref: "Account",
     },
-    name: { 
+    organizationName: { 
         type: String, 
         required: [true, "Nombre requerido"], 
         unique: true
     },
-    documentIdentificationType: { 
+    documentOrganizationType: { 
         type: String, 
         required: [true, "Tipo de documento requerido"],
         unique: true
     },
-    documentIdentificationNumber: { 
-        type: String, 
+    documentIdentificationNumberOrganization: { 
+        type: Number, 
         required: [true, "Numero de documento requerido"],
         unique: true
     },
@@ -29,8 +29,14 @@ const organizationSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId, 
         ref: "User",
     }],
-    address: { 
+    addressOrganization: { 
         type: String 
+    },
+    cityOrganization: { 
+        type: Schema.Types.Mixed,
+    },
+    stateNameOrganization: { 
+        type: Schema.Types.Mixed, 
     },
     userOwnerId: {
         type: String, 
@@ -45,13 +51,13 @@ const organizationSchema = new mongoose.Schema({
     urlImage: { 
         type: String 
     },
-    email: { 
+    emailOrganization: { 
         type: String, 
         required: [true, "Email requerido"], 
         unique: true 
     },
-    phoneNumber: { 
-        type: String, 
+    phoneNumberOrganization: { 
+        type: Number, 
         required: [true, "Numero de teléfono requerido"], 
         unique: true 
     },
@@ -62,7 +68,7 @@ const organizationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: StatusEnum.ENABLED,
+        default: StatusEnum.PENDING,
         enum: StatusEnum
     },
     createdAt: {

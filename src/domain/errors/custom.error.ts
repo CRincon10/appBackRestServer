@@ -1,37 +1,27 @@
 export class CustomError extends Error {
-    public readonly statusCode: number;
-    public readonly data: { message: string };
 
-    private constructor(statusCode: number, data: { message: string }) {
-        super(data.message);
-        this.data = data;
-        this.statusCode = statusCode;
-        console.log(this.data)
+    private constructor( public readonly statusCode: number, public readonly message:string ) {
+        super(message)
     }
 
-    static badRequestResult(message: string) {
-        const data = { message: message };
-        return new CustomError(400, data);
+    static badRequestResult(message:string){
+        return new CustomError(400, message);
     }
 
-    static unauthorized(message: string) {
-        const data = { message: message };
-        return new CustomError(401, data);
+    static unauthorized(message:string){
+        return new CustomError(401, message);
     }
 
-    static forbidden(message: string) {
-        const data = { message: message };
-        return new CustomError(403, data);
+    static forbidden(message:string){
+        return new CustomError(403, message);
     }
 
-    static notFound(message: string) {
-        const data = { message: message };
-        return new CustomError(404, data);
+    static notFound(message:string){
+        return new CustomError(404, message);
     }
-
-    static internalServer(message: string) {
+    
+    static internalServer(message:string){
         console.log("Error", message);
-        const data = { message: message };
-        return new CustomError(500, data);
+        return new CustomError(500, message);
     }
-};
+}
